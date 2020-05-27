@@ -1,0 +1,47 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string",
+            "metadata": {
+                "description": "The full resource name of the Availability set resource."
+            }
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "The location of the Availability set resource."
+            }
+        },
+        "faultDomainCount": {
+            "type": "int",
+            "metadata": {
+                "description": "The number of fault domains to use."
+            }
+        },
+        "updateDomainCount": {
+            "type": "int",
+            "metadata": {
+                "description": "The number of update domains to use."
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[parameters('name')]",
+            "apiVersion": "2019-07-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "platformFaultDomainCount": "[parameters('faultDomainCount')]",
+                "platformUpdateDomainCount": "[parameters('updateDomainCount')]"
+            },
+            "sku": {
+                "name": "Aligned"
+            },
+            "tags": {
+            }
+        }
+    ]
+}

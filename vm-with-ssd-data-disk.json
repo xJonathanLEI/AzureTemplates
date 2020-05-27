@@ -1,0 +1,163 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "virtualMachineName": {
+            "type": "string"
+        },
+        "availabilitySetName": {
+            "type": "string"
+        },
+        "subnetId": {
+            "type": "string"
+        },
+        "publicIpId": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "osDiskType": {
+            "type": "string"
+        },
+        "dataDiskName": {
+            "type": "string"
+        },
+        "dataDiskSizeGb": {
+            "type": "int"
+        },
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPublicKey": {
+            "type": "secureString"
+        },
+        "customData": {
+            "type": "secureString"
+        }
+    },
+    "variables": {
+        "networkInterfaceName": "[concat(parameters('virtualMachineName'), '-nic')]",
+        "availabilitySet": {
+            "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
+        }
+    },
+    "resources": [
+        {
+            "name": "[variables('networkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-07-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[parameters('subnetId')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "condition": "[not(empty(parameters('publicIpId')))]",
+                                "id": "[parameters('publicIpId')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2019-07-01",
+            "type": "Microsoft.Compute/disks",
+            "name": "[parameters('dataDiskName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "creationData": {
+                    "createOption": "Empty"
+                },
+                "diskSizeGB": "[parameters('dataDiskSizeGb')]"
+            },
+            "sku": {
+                "name": "Premium_LRS"
+            },
+            "tags": {
+            }
+        },
+        {
+            "name": "[parameters('virtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/disks/', parameters('dataDiskName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('osDiskType')]"
+                        }
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "createOption": "Attach",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "id": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
+                            }
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachineName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('adminPublicKey')]"
+                                }
+                            ]
+                        }
+                    },
+                    "customData": "[if(empty(parameters('customData')), json('null'), parameters('customData'))]"
+                },
+                "availabilitySet": "[if(empty(parameters('availabilitySetName')), json('null'), variables('availabilitySet'))]"
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "string",
+            "value": "[parameters('adminUsername')]"
+        }
+    }
+}
