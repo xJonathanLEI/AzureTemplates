@@ -30,6 +30,9 @@
         "virtualMachineSize": {
             "type": "string"
         },
+        "useAcceleratedNetworking": {
+            "type": "string"
+        },
         "adminUsername": {
             "type": "string"
         },
@@ -55,6 +58,7 @@
             "dependsOn": [
             ],
             "properties": {
+                "enableAcceleratedNetworking": "[parameters('useAcceleratedNetworking')]",
                 "ipConfigurations": [
                     {
                         "name": "ipconfig1",
