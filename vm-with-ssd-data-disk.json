@@ -45,6 +45,7 @@
     },
     "variables": {
         "networkInterfaceName": "[concat(parameters('virtualMachineName'), '-nic')]",
+        "osDiskName": "[concat(parameters('virtualMachineName'), '-osdisk')]",
         "availabilitySet": {
             "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
         }
@@ -114,6 +115,7 @@
                         "version": "latest"
                     },
                     "osDisk": {
+                        "name": "[variables('osDiskName')]",
                         "createOption": "FromImage",
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
