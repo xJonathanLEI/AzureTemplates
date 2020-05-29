@@ -9,7 +9,8 @@
             "type": "string"
         },
         "availabilitySetName": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": ""
         },
         "subnetId": {
             "type": "string"
