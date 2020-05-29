@@ -15,6 +15,12 @@
         "subnetId": {
             "type": "string"
         },
+        "staticIpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "Leave this parameter empty if you want to use dynamic private IP address allocation"
+            }
+        },
         "usePublicIp": {
             "type": "bool",
             "defaultValue": false
@@ -109,7 +115,8 @@
                             "subnet": {
                                 "id": "[parameters('subnetId')]"
                             },
-                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddress": "[if(empty(parameters('staticIpAddress')), json('null'), parameters('staticIpAddress'))]",
+                            "privateIPAllocationMethod": "[if(empty(parameters('staticIpAddress')), 'Dynamic', 'Static')]",
                             "publicIPAddress": {
                                 "condition": "[parameters('usePublicIp')]",
                                 "id": "[if(empty(parameters('publicIpId')), resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIpName')), parameters('publicIpId'))]"
