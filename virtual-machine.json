@@ -14,9 +14,16 @@
         "subnetId": {
             "type": "string"
         },
+        "usePublicIp": {
+            "type": "bool",
+            "defaultValue": false
+        },
         "publicIpId": {
+            "type": "string",
             "defaultValue": "",
-            "type": "string"
+            "metadata": {
+                "description": "Leave this parameter empty if you want the template to create a fresh IP address when `usePublicIp` is `true`"
+            }
         },
         "osDiskType": {
             "type": "string"
@@ -44,6 +51,7 @@
         }
     },
     "variables": {
+        "publicIpName": "[concat(parameters('virtualMachineName'), '-ip')]",
         "networkInterfaceName": "[concat(parameters('virtualMachineName'), '-nic')]",
         "osDiskName": "[concat(parameters('virtualMachineName'), '-osdisk')]",
         "dataDisks": [
@@ -63,11 +71,29 @@
     },
     "resources": [
         {
+            "condition": "[and(parameters('usePublicIp'), empty(parameters('publicIpId')))]",
+            "name": "[variables('publicIpName')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-02-01",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "publicIpAddressVersion": "IPv4",
+                "ipTags": [
+                ]
+            }
+        },
+        {
             "name": "[variables('networkInterfaceName')]",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]"
             ],
             "properties": {
                 "enableAcceleratedNetworking": "[parameters('useAcceleratedNetworking')]",
@@ -80,8 +106,8 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "condition": "[not(empty(parameters('publicIpId')))]",
-                                "id": "[parameters('publicIpId')]"
+                                "condition": "[parameters('usePublicIp')]",
+                                "id": "[if(empty(parameters('publicIpId')), concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName')), parameters('publicIpId'))]"
                             }
                         }
                     }
