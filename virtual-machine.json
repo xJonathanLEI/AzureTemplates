@@ -40,7 +40,7 @@
             "type": "string"
         },
         "useAcceleratedNetworking": {
-            "type": "string"
+            "type": "bool"
         },
         "adminUsername": {
             "type": "string"
