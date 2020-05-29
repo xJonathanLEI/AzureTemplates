@@ -46,6 +46,17 @@
     "variables": {
         "networkInterfaceName": "[concat(parameters('virtualMachineName'), '-nic')]",
         "osDiskName": "[concat(parameters('virtualMachineName'), '-osdisk')]",
+        "dataDisks": [
+            {
+                "lun": 0,
+                "createOption": "Attach",
+                "caching": "None",
+                "writeAcceleratorEnabled": false,
+                "managedDisk": {
+                    "id": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
+                }
+            }
+        ],
         "availabilitySet": {
             "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
         }
@@ -121,17 +132,7 @@
                             "storageAccountType": "[parameters('osDiskType')]"
                         }
                     },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "createOption": "Attach",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "id": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
-                            }
-                        }
-                    ]
+                    "dataDisks": "[if(or(empty(parameters('dataDiskName')), equals(parameters('dataDiskSizeGb'), 0)), json('null'), variables('dataDisks'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
