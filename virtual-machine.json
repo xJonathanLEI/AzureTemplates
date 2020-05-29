@@ -112,7 +112,7 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
                                 "condition": "[parameters('usePublicIp')]",
-                                "id": "[if(empty(parameters('publicIpId')), concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName')), parameters('publicIpId'))]"
+                                "id": "[if(empty(parameters('publicIpId')), resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIpName')), parameters('publicIpId'))]"
                             }
                         }
                     }
