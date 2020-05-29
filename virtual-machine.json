@@ -54,6 +54,7 @@
         "publicIpName": "[concat(parameters('virtualMachineName'), '-ip')]",
         "networkInterfaceName": "[concat(parameters('virtualMachineName'), '-nic')]",
         "osDiskName": "[concat(parameters('virtualMachineName'), '-osdisk')]",
+        "useDataDisk": "[and(not(empty(parameters('dataDiskName'))), not(equals(parameters('dataDiskSizeGb'), 0)))]",
         "dataDisks": [
             {
                 "lun": 0,
@@ -115,9 +116,10 @@
             }
         },
         {
-            "apiVersion": "2019-07-01",
-            "type": "Microsoft.Compute/disks",
+            "condition": "[variables('useDataDisk')]",
             "name": "[parameters('dataDiskName')]",
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "properties": {
                 "creationData": {
@@ -158,7 +160,7 @@
                             "storageAccountType": "[parameters('osDiskType')]"
                         }
                     },
-                    "dataDisks": "[if(or(empty(parameters('dataDiskName')), equals(parameters('dataDiskSizeGb'), 0)), json('null'), variables('dataDisks'))]"
+                    "dataDisks": "[if(variables('useDataDisk'), variables('dataDisks'), json('null'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
