@@ -48,7 +48,8 @@
             "type": "secureString"
         },
         "customData": {
-            "type": "secureString"
+            "type": "secureString",
+            "defaultValue": ""
         }
     },
     "variables": {
