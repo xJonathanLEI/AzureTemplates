@@ -28,11 +28,12 @@
         "osDiskType": {
             "type": "string"
         },
-        "dataDiskName": {
-            "type": "string"
-        },
         "dataDiskSizeGb": {
-            "type": "int"
+            "type": "int",
+            "defaultValue": 0,
+            "metadata": {
+                "description": "Leave this parameter empty if you don't need a data disk"
+            }
         },
         "virtualMachineSize": {
             "type": "string"
@@ -54,7 +55,8 @@
         "publicIpName": "[concat(parameters('virtualMachineName'), '-ip')]",
         "networkInterfaceName": "[concat(parameters('virtualMachineName'), '-nic')]",
         "osDiskName": "[concat(parameters('virtualMachineName'), '-osdisk')]",
-        "useDataDisk": "[and(not(empty(parameters('dataDiskName'))), not(equals(parameters('dataDiskSizeGb'), 0)))]",
+        "useDataDisk": "[not(equals(parameters('dataDiskSizeGb'), 0))]",
+        "dataDiskName": "[concat(parameters('virtualMachineName'), '-datadisk-0')]",
         "dataDisks": [
             {
                 "lun": 0,
@@ -62,7 +64,7 @@
                 "caching": "None",
                 "writeAcceleratorEnabled": false,
                 "managedDisk": {
-                    "id": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
+                    "id": "[resourceId('Microsoft.Compute/disks', variables('dataDiskName'))]"
                 }
             }
         ],
@@ -117,7 +119,7 @@
         },
         {
             "condition": "[variables('useDataDisk')]",
-            "name": "[parameters('dataDiskName')]",
+            "name": "[variables('dataDiskName')]",
             "type": "Microsoft.Compute/disks",
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
@@ -139,7 +141,7 @@
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Compute/disks/', parameters('dataDiskName'))]",
+                "[concat('Microsoft.Compute/disks/', variables('dataDiskName'))]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
             "properties": {
