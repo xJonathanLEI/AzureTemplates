@@ -78,6 +78,9 @@
         ],
         "availabilitySet": {
             "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
+        },
+        "publicIpAddress": {
+            "id": "[if(empty(parameters('publicIpId')), resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIpName')), parameters('publicIpId'))]"
         }
     },
     "resources": [
@@ -117,10 +120,7 @@
                             },
                             "privateIPAddress": "[if(empty(parameters('staticIpAddress')), json('null'), parameters('staticIpAddress'))]",
                             "privateIPAllocationMethod": "[if(empty(parameters('staticIpAddress')), 'Dynamic', 'Static')]",
-                            "publicIPAddress": {
-                                "condition": "[parameters('usePublicIp')]",
-                                "id": "[if(empty(parameters('publicIpId')), resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIpName')), parameters('publicIpId'))]"
-                            }
+                            "publicIPAddress": "[if(parameters('usePublicIp'), variables('publicIpAddress'), json('null'))]"
                         }
                     }
                 ]
