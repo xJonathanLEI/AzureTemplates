@@ -104,7 +104,7 @@
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]"
+                "[variables('publicIpName')]"
             ],
             "properties": {
                 "enableAcceleratedNetworking": "[parameters('useAcceleratedNetworking')]",
