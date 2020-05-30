@@ -17,6 +17,7 @@
         },
         "staticIpAddress": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "Leave this parameter empty if you want to use dynamic private IP address allocation"
             }
