@@ -1,0 +1,112 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "loadBalancerName": {
+            "type": "string"
+        },
+        "subnetId": {
+            "type": "string"
+        },
+        "staticIpAddress": {
+            "type": "string"
+        },
+        "healthProbeName": {
+            "type": "string"
+        },
+        "healthProbePort": {
+            "type": "int"
+        },
+        "healthProbePath": {
+            "type": "string"
+        },
+        "backendPoolName": {
+            "type": "string"
+        },
+        "loadBalancingRules": {
+            "type": "array"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "apiVersion": "2019-06-01",
+            "name": "[parameters('loadBalancerName')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Basic"
+            },
+            "dependsOn": [
+            ],
+            "tags": {
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerFrontEnd",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[parameters('subnetId')]"
+                            },
+                            "privateIPAddress": "[parameters('staticIpAddress')]"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[parameters('backendPoolName')]"
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "[parameters('healthProbeName')]",
+                        "properties": {
+                            "protocol": "Http",
+                            "port": "[parameters('healthProbePort')]",
+                            "requestPath": "[parameters('healthProbePath')]",
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [
+                ],
+                "inboundNatPools": [
+                ],
+                "copy": [
+                    {
+                        "name": "loadBalancingRules",
+                        "count": "[length(parameters('loadBalancingRules'))]",
+                        "input": {
+                            "name": "[parameters('loadBalancingRules')[copyIndex('loadBalancingRules')].name]",
+                            "properties": {
+                                "frontendIPConfiguration": {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/frontendIPConfigurations/', 'LoadBalancerFrontEnd')]"
+                                },
+                                "frontendPort": "[parameters('loadBalancingRules')[copyIndex('loadBalancingRules')].fromPort]",
+                                "backendPort": "[parameters('loadBalancingRules')[copyIndex('loadBalancingRules')].toPort]",
+                                "enableFloatingIP": false,
+                                "idleTimeoutInMinutes": 4,
+                                "protocol": "Tcp",
+                                "enableTcpReset": false,
+                                "loadDistribution": "Default",
+                                "backendAddressPool": {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/backendAddressPools/', parameters('backendPoolName'))]"
+                                },
+                                "probe": {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/probes/', parameters('healthProbeName'))]"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
