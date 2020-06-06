@@ -14,6 +14,13 @@
         "useAcceleratedNetworking": {
             "type": "bool"
         },
+        "loadBalancingPoolId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Leave this parameter empty if you don't want to put the scale set behind a load balancer"
+            }
+        },
         "instanceSize": {
             "type": "string"
         },
@@ -41,7 +48,12 @@
     },
     "variables": {
         "namingInfix": "[toLower(substring(concat(parameters('scaleSetName'), uniqueString(resourceGroup().id)), 0, 9))]",
-        "nicName": "[concat(parameters('scaleSetName'), '-nic')]"
+        "nicName": "[concat(parameters('scaleSetName'), '-nic')]",
+        "lbBackendPools": [
+            {
+                "id": "[parameters('loadBalancingPoolId')]"
+            }
+        ]
     },
     "resources": [
         {
@@ -93,7 +105,8 @@
                                                 "subnet": {
                                                     "id": "[parameters('subnetId')]"
                                                 },
-                                                "primary": true
+                                                "primary": true,
+                                                "loadBalancerBackendAddressPools": "[if(empty(parameters('loadBalancingPoolId')), json('null'), variables('lbBackendPools'))]"
                                             }
                                         }
                                     ],
