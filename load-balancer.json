@@ -8,11 +8,26 @@
         "loadBalancerName": {
             "type": "string"
         },
+        "publicIpId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Leave this parameter empty if you're using it as an internal load balancer"
+            }
+        },
         "subnetId": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Leave this parameter empty if you're using it as a public load balancer"
+            }
         },
         "staticIpAddress": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Leave this parameter empty if you're using it as a public load balancer"
+            }
         },
         "healthProbeName": {
             "type": "string"
@@ -31,6 +46,25 @@
         }
     },
     "variables": {
+        "isPublic": "[not(empty(parameters('publicIpId')))]",
+        "publicFrontend": {
+            "name": "LoadBalancerFrontEnd",
+            "properties": {
+                "publicIPAddress": {
+                    "id": "[parameters('publicIpId')]"
+                }
+            }
+        },
+        "internalFrontend": {
+            "name": "LoadBalancerFrontEnd",
+            "properties": {
+                "privateIPAllocationMethod": "Static",
+                "subnet": {
+                    "id": "[parameters('subnetId')]"
+                },
+                "privateIPAddress": "[parameters('staticIpAddress')]"
+            }
+        }
     },
     "resources": [
         {
@@ -47,16 +81,7 @@
             },
             "properties": {
                 "frontendIPConfigurations": [
-                    {
-                        "name": "LoadBalancerFrontEnd",
-                        "properties": {
-                            "privateIPAllocationMethod": "Static",
-                            "subnet": {
-                                "id": "[parameters('subnetId')]"
-                            },
-                            "privateIPAddress": "[parameters('staticIpAddress')]"
-                        }
-                    }
+                    "[if(variables('isPublic'), variables('publicFrontend'), variables('internalFrontend'))]"
                 ],
                 "backendAddressPools": [
                     {
