@@ -14,11 +14,11 @@
         "useAcceleratedNetworking": {
             "type": "bool"
         },
-        "loadBalancingPoolId": {
-            "type": "string",
-            "defaultValue": "",
+        "loadBalancingPoolIds": {
+            "type": "array",
+            "defaultValue": [],
             "metadata": {
-                "description": "Leave this parameter empty if you don't want to put the scale set behind a load balancer"
+                "description": "Leave this parameter empty if you don't want to put the scale set behind any load balancer"
             }
         },
         "instanceSize": {
@@ -48,12 +48,7 @@
     },
     "variables": {
         "namingInfix": "[toLower(substring(concat(parameters('scaleSetName'), uniqueString(resourceGroup().id)), 0, 9))]",
-        "nicName": "[concat(parameters('scaleSetName'), '-nic')]",
-        "lbBackendPools": [
-            {
-                "id": "[parameters('loadBalancingPoolId')]"
-            }
-        ]
+        "nicName": "[concat(parameters('scaleSetName'), '-nic')]"
     },
     "resources": [
         {
@@ -106,7 +101,15 @@
                                                     "id": "[parameters('subnetId')]"
                                                 },
                                                 "primary": true,
-                                                "loadBalancerBackendAddressPools": "[if(empty(parameters('loadBalancingPoolId')), json('null'), variables('lbBackendPools'))]"
+                                                "copy": [
+                                                    {
+                                                        "name": "loadBalancerBackendAddressPools",
+                                                        "count": "[length(parameters('loadBalancingPoolIds'))]",
+                                                        "input": {
+                                                            "id": "[parameters('loadBalancingPoolIds')[copyIndex('loadBalancerBackendAddressPools')]]"
+                                                        }
+                                                    }
+                                                ]
                                             }
                                         }
                                     ],
