@@ -33,6 +33,13 @@
                 "description": "Leave this parameter empty if you want the template to create a fresh IP address when `usePublicIp` is `true`"
             }
         },
+        "osDiskName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Override OS disk name. For backward compatibility use only"
+            }
+        },
         "osDiskType": {
             "type": "string"
         },
@@ -166,7 +173,7 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "[variables('osDiskName')]",
+                        "name": "[if(empty(parameters('osDiskName')), variables('osDiskName'), parameters('osDiskName'))]",
                         "createOption": "FromImage",
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
