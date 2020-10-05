@@ -43,6 +43,13 @@
         "osDiskType": {
             "type": "string"
         },
+        "dataDiskType": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Leave this parameter empty if you don't need a data disk"
+            }
+        },
         "dataDiskSizeGb": {
             "type": "int",
             "defaultValue": 0,
@@ -147,7 +154,7 @@
                 "diskSizeGB": "[parameters('dataDiskSizeGb')]"
             },
             "sku": {
-                "name": "Premium_LRS"
+                "name": "[parameters('dataDiskType')]"
             },
             "tags": {
             }
