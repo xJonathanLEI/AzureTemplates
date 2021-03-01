@@ -33,6 +33,13 @@
                 "description": "Leave this parameter empty if you want the template to create a fresh IP address when `usePublicIp` is `true`"
             }
         },
+        "ubuntuSku": {
+            "type": "string",
+            "defaultValue": "18.04-LTS",
+            "metadata": {
+                "description": "Ubuntu version. Defaults to 18.04 LTS"
+            }
+        },
         "osDiskName": {
             "type": "string",
             "defaultValue": "",
@@ -176,7 +183,7 @@
                     "imageReference": {
                         "publisher": "Canonical",
                         "offer": "UbuntuServer",
-                        "sku": "18.04-LTS",
+                        "sku": "[parameters('ubuntuSku')]",
                         "version": "latest"
                     },
                     "osDisk": {
